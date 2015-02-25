@@ -21,10 +21,10 @@
 #include <stdio.h>
 #include "queue.h"
 
-
 // *CONSTANTS*
 #define BUF_CAPACITY 10
-
+#define ERR_MSG "p3"
+#define ERR_CODE 1
 
 // *TYPES AND STRUCTS*
 typedef struct {
@@ -32,11 +32,9 @@ typedef struct {
   queue *q;
 } thread_args;
 
-
 // *FUNCTION PROTOTYPES*
 void *producer_thread(void *args);
 void *consumer_thread(void *args);
-
 
 // *MAIN PROGRAM*
 int main(int argc, char *argv[]){
@@ -47,11 +45,22 @@ int main(int argc, char *argv[]){
   int i;
   srand(time(NULL));
 
-
   /* 1. Get command line arguments */
   if (argc != 4) {
-    printf("Usage:\t%s <number of producer threads> <number of consumer threads> <fifo(0) or filo(1)>\n",argv[0]);
-    exit(1);
+    fprintf(stderr, "Usage:\t%s <number of producer threads> <number of consumer threads> <fifo(0) or filo(1)>\n",argv[0]);
+    exit(ERR_CODE);
+  }
+
+  char *end_p, *end_c, *end_f;
+  num_producers = strtol(argv[1], &end_p, 10);
+  num_consumers = strtol(argv[2], &end_c, 10);
+  is_FIFO = strtol(argv[3], &end_f, 2);
+
+  if(end_p == argv[1] || *end_p != '\0' || num_producers < 1
+     || end_c == argv[2] || *end_c != '\0' || num_consumers < 1
+     || end_f == argv[3] || *end_f != '\0' || !(is_FIFO == 0 || is_FIFO == 1)) {
+    fprintf(stderr, "Error parsing command-line arguments.\n");
+    exit(ERR_CODE);
   }
   num_producers = atoi(argv[1]);
   num_consumers = atoi(argv[2]);
@@ -69,6 +78,8 @@ int main(int argc, char *argv[]){
 
     if(pthread_create(&(producer_threads[i]), NULL, producer_thread, (void *) this_thread_args) != 0) {
       // Uh, Mr. The Plague, uh, something weird is happening on the net
+      perror(ERR_MSG);
+      exit(ERR_CODE);
     }
   }
 
@@ -81,11 +92,15 @@ int main(int argc, char *argv[]){
 
     if(pthread_create(&(consumer_threads[i]), NULL, consumer_thread, (void *) this_thread_args) != 0) {
       // Uh, Mr. The Plague, uh, something weird is happening on the net
+      perror(ERR_MSG);
+      exit(ERR_CODE);
     }
   }
 
   /* 5. Sleep 300 seconds*/
-  sleep(300);
+  if(sleep(300)) {
+    fprintf(stderr, "Main thread sleep interrupted.\n");
+  }
 
   /* Cancel remaining blocking threads and clean up thread resources */
   for(i = 0; i < num_producers; i++) {
@@ -102,7 +117,6 @@ int main(int argc, char *argv[]){
   return 0;
 }
 
-
 /**
  * The thread handler for the producers. Waits a random-ish amount of time, then
  * pushes a random number onto the queue, and finally prints the results.
@@ -118,7 +132,10 @@ void *producer_thread(void *args)
   args = NULL;
 
   int elem = rand();
-  usleep(1000 * (rand() % 1000));
+
+  if(usleep(1000 * (rand() % 1000))) {
+    fprintf(stderr, "Producer thread sleep interrupted.\n");
+  }
 
   if(!sem_wait(&(q->producer))) {
     /* Lock production semaphore */
@@ -126,6 +143,8 @@ void *producer_thread(void *args)
 
     if(push_queue(q, elem) < 0) {
       // Uh, Mr. The Plague, uh, something weird is happening on the net
+      fprintf(stderr, "Error in producer thread: can't write to buffer.\n");
+      return (void *) ERR_CODE;
     }
 
     /* Print description of what's up */
@@ -136,16 +155,16 @@ void *producer_thread(void *args)
     /* Unlock consumption semaphore to signal that the buffer has elements */
     if(sem_post(&(q->consumer))) {
       /* Handle semaphore post failure */
-      perror("producer semaphore"); // TODO
+      perror("producer semaphore post");
+      return (void *) ERR_CODE;
     }
   } else {
     /* Handle semaphore wait failure */
-    perror("producer semaphore"); // TODO
+    perror("producer semaphore wait");
   }
 
   return NULL;
 }
-
 
 /**
  * The thread handler for the consumers. Waits a random-ish amount of time, then
@@ -162,7 +181,10 @@ void *consumer_thread(void *args)
   args = NULL;
 
   int elem;
-  usleep(1000 * (rand() % 1000));
+
+  if(usleep(1000 * (rand() % 1000))) {
+    fprintf(stderr, "Consumer thread sleep interrupted.\n");
+  }
 
   if(!sem_wait(&(q->consumer))) {
     /* Lock consumption semaphore. */
@@ -170,6 +192,8 @@ void *consumer_thread(void *args)
 
     if((elem = pop_queue(q)) < 0) {
       // Uh, Mr. The Plague, uh, something weird is happening on the net
+      fprintf(stderr, "Error in consumer thread: can't read from buffer.\n");
+      return (void *) ERR_CODE;
     }
 
     /* Check it out y'all, check it check it out */
@@ -180,11 +204,12 @@ void *consumer_thread(void *args)
     /* Unlock production semaphore */
     if(sem_post(&(q->producer))) {
       /* Handle semaphore post failure */
-      perror("consumer semaphore"); // TODO
+      perror("consumer semaphore post");
+      return (void *) ERR_CODE;
     }
   } else {
     /* Handle semaphore wait failure */
-    perror("consumer semaphore"); // TODO
+    perror("consumer semaphore wait");
   }
 
   return NULL;

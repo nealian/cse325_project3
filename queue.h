@@ -3,6 +3,9 @@
  * Wrapper for Linux tail queues
  */
 
+#ifndef _BUFFER_QUEUE_
+#define _BUFFER_QUEUE_
+
 #include <sys/queue.h> // TAILQ macros
 #include <pthread.h> // pthread_mutex
 #include <semaphore.h>
@@ -74,3 +77,5 @@ void free_queue(queue* q);
  * @param q  Queue to print out.
  */
 void print_queue(queue* q);
+
+#endif
