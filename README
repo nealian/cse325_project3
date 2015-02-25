@@ -5,6 +5,39 @@ Lab Project 3
 
 The SANIC TEEM Producer / Consumer Experiment For Great Good, hereafter called "the program", is a multithreaded program designed solely to explore multithreaded programming and all the inherent synchronization problems that arise.  The program uses a shared buffer created by the main thread, and then spawns new producer and consumer threads that add to and remove from that buffer, respectively.  It takes three arguments: the number of producers, the number of consumers, and whether to use a First In Last Out style queue (usually called a stack) for the buffer (the alternative is First In First Out, or a standard queue).  The main thread will wait a full five minutes to exit; since one can specify more producers than consumers, not every generated element is consumed, and since one can specify more consumers than producers, a few producers might be hanging waiting for elements that will never be generated.
 
+
 The program may be compiled with the `make` directive.
 
 
+Examples:
+$ ./p3 9 9 1
+item 2033688248 added by producer 6: buffer = [ 2033688248 ]
+item 2033688248 removed by consumer 7: buffer = [ ]
+item 1261966835 added by producer 8: buffer = [ 1261966835 ]
+item 58594714 added by producer 1: buffer = [ 1261966835 58594714 ]
+item 1261966835 removed by consumer 8: buffer = [ 58594714 ]
+item 58594714 removed by consumer 5: buffer = [ ]
+item 1511250982 added by producer 4: buffer = [ 1511250982 ]
+item 225449014 added by producer 2: buffer = [ 1511250982 225449014 ]
+item 767796357 added by producer 5: buffer = [ 1511250982 225449014 767796357 ]
+item 1511250982 removed by consumer 4: buffer = [ 225449014 767796357 ]
+item 225449014 removed by consumer 3: buffer = [ 767796357 ]
+item 1434328395 added by producer 3: buffer = [ 767796357 1434328395 ]
+item 767796357 removed by consumer 1: buffer = [ 1434328395 ]
+item 1434328395 removed by consumer 2: buffer = [ ]
+item 1678827543 added by producer 9: buffer = [ 1678827543 ]
+item 1678827543 removed by consumer 6: buffer = [ ]
+item 574223515 added by producer 7: buffer = [ 574223515 ]
+item 574223515 removed by consumer 9: buffer = [ ]
+$ ./p3 1 2 0
+item 980667880 added by producer 1: buffer = [ 980667880 ]
+item 980667880 removed by consumer 1: buffer = [ ]
+$ ./p3 4 1 1
+item 1230364672 added by producer 4: buffer = [ 1230364672 ]
+item 1230364672 removed by consumer 1: buffer = [ ]
+item 357519252 added by producer 3: buffer = [ 357519252 ]
+item 76181578 added by producer 2: buffer = [ 357519252 76181578 ]
+item 1216877508 added by producer 1: buffer = [ 357519252 76181578 1216877508 ]
+
+
+(Easter eggs! For extra fun, try running the program with big numbers; semaphores (and a mutex internal to the queue) keep the buffer from overfilling, since sem_wait is blocking and so is mutex_lock.)
