@@ -42,7 +42,7 @@ void *consumer_thread(void *args);
 int main(int argc, char *argv[]){
 
   int num_producers, num_consumers;
-  bool is_FIFO;
+  bool is_FILO;
   queue *q;
   int i;
   srand(time(NULL));
@@ -55,10 +55,10 @@ int main(int argc, char *argv[]){
   }
   num_producers = atoi(argv[1]);
   num_consumers = atoi(argv[2]);
-  is_FIFO = atoi(argv[3]) ? false : true;
+  is_FILO = atoi(argv[3]);
 
   /* 2. Initialize buffer entries with -1*/
-  q = new_queue(is_FIFO, BUF_CAPACITY);
+  q = new_queue(is_FILO, BUF_CAPACITY);
 
   /* 3. Create producer thread(s) */
   pthread_t producer_threads[num_producers];

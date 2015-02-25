@@ -9,7 +9,7 @@
 #include <stdbool.h> // bool, true, false
 
 typedef struct {
-  bool is_FIFO; // True => FIFO queue, false => FILO.
+  bool is_FILO; // True => FILO queue, false => FIFO.
   TAILQ_HEAD(, q_entry) head; // head element, used internally
   int size; // kept accurate with bookkeeping
   int capacity; // max number of elements in the queue
@@ -26,15 +26,15 @@ struct q_entry {
  * Create a new empty FIFO or FILO instance. Will allocate space, so the queue
  * must be freed with free_queue when finished.
  *
- * @param is_FIFO   If true, the created queue is FIFO, if false then FILO
+ * @param is_FILO   If true, the created queue is FILO, if false then FIFO.
  * @param capacity  Max number of elements in the queue.
  * @return          Pointer to new queue.
  */
-queue* new_queue(bool is_FIFO, int capacity);
+queue* new_queue(bool is_FILO, int capacity);
 
 /**
- * Add an element to the queue. FIFO queues add elements to the head of the
- * queue, and FILO queues add them to the tail.
+ * Add an element to the queue. FILO queues add elements to the head of the
+ * queue, and FIFO queues add them to the tail.
  *
  * Note! This function blocks until the buffer mutex is open AND the queue is
  * not full

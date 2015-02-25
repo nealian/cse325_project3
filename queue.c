@@ -1,11 +1,10 @@
 #include <stdlib.h> // malloc
 #include <stdio.h> // printf
 #include "queue.h"
-#include <semaphore.h>
 
-queue* new_queue(bool is_FIFO, int capacity) {
+queue* new_queue(bool is_FILO, int capacity) {
   queue* q = malloc(sizeof(queue));
-  q->is_FIFO = is_FIFO;
+  q->is_FILO = is_FILO;
   
   TAILQ_INIT(&(q->head));
     
@@ -42,7 +41,7 @@ int push_queue(queue* q, int item) {
     /* Lock buffer mutex */
     /* This ensures that buffer modifications don't interfere */
       
-    if(q->is_FIFO) {
+    if(q->is_FILO) {
       /* Insert at head */
       TAILQ_INSERT_HEAD(&(q->head), new_entry, entries);
     } else {
