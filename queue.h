@@ -10,7 +10,7 @@
 
 typedef struct {
   bool is_FILO; // True => FILO queue, false => FIFO.
-  TAILQ_HEAD(, q_entry) head; // head element, used internally
+  TAILQ_HEAD(q_head, q_entry) head; // head element, used internally
   int size; // kept accurate with bookkeeping
   int capacity; // max number of elements in the queue
   pthread_mutex_t buffer_mutex; // Mutex to synchronize buffer operations
