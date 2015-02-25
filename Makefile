@@ -11,6 +11,7 @@ CC = gcc
 CFLAGS = -ggdb -Wall
 VAL = valgrind --quiet --leak-check=yes --undef-value-errors=no --error-exitcode=1
 OUT = p3
+OBJECTS = queue.o
 RM = rm -f
 
 ECHO = echo -e
@@ -20,8 +21,11 @@ GOOD_STRING = "\x1b[32;01m[GOOD]\x1b[0m"
 
 all: p3
 
-p3: p3.c
-	$(CC) $(CFLAGS) -o $(OUT) $<
+p3: p3.c $(OBJECTS)
+	$(CC) $(CFLAGS) -o $(OUT) $^
+
+queue.o: queue.c
+	$(CC) $(CFLAGS) -c $<
 
 test: p3
 	$(VAL) ./$(OUT) || ($(ECHO) $(FAIL_STRING) | $(R_ALIGN); exit 1)
