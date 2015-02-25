@@ -136,7 +136,40 @@ int pop_queue(queue* q) {
 }
 
 void free_queue(queue* q) {
-  // TODO
+  if(pthread_mutex_lock(&(q->buffer_mutex))) {
+    /* Lock buffer mutex (though at this point it should not matter) */
+
+    /* Free all items remaining in the queue */
+    struct q_entry *entry;
+    while((entry = TAILQ_FIRST(&(q->head)))) {
+      TAILQ_REMOVE(&(q->head), entry, entries);
+      free(entry);
+    }
+
+    /* Destroy semaphores */
+    if(!sem_destroy(&(q->producer))
+       || !sem_destroy(&(q->consumer))) {
+      /* Handle semaphore destruction failure */
+      perror("queue free"); // TODO
+    }
+
+    if(!pthread_mutex_unlock(&(q->buffer_mutex))) {
+      /* Handle buffer mutex unlock failure */
+      perror("queue free"); // TODO
+    }
+  } else {
+    /* Handle buffer mutex lock failure */
+    perror("queue free"); // TODO    
+  }
+
+  /* Destroy mutex */
+  if(!pthread_mutex_destroy(&(q->buffer_mutex))) {
+    /* Handle buffer mutex destruction failure */
+    perror("queue free");
+  }
+
+  /* Finally, free queue itself */
+  free(q);
 }
 
 void print_queue(queue* q) {
