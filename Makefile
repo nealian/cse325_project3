@@ -28,7 +28,13 @@ queue.o: queue.c
 	$(CC) $(CFLAGS) -c $<
 
 test: p3
-	$(VAL) ./$(OUT) || ($(ECHO) $(FAIL_STRING) | $(R_ALIGN); exit 1)
+	$(VAL) ./$(OUT) 10 10 1 || ($(ECHO) $(FAIL_STRING) | $(R_ALIGN); exit 1)
+	@$(ECHO) $(GOOD_STRING) | $(R_ALIGN)
+	$(VAL) ./$(OUT) 10 10 0 || ($(ECHO) $(FAIL_STRING) | $(R_ALIGN); exit 1)
+	@$(ECHO) $(GOOD_STRING) | $(R_ALIGN)
+	$(VAL) ./$(OUT) 10 11 0 || ($(ECHO) $(FAIL_STRING) | $(R_ALIGN); exit 1)
+	@$(ECHO) $(GOOD_STRING) | $(R_ALIGN)
+	$(VAL) ./$(OUT) 21 10 0 || ($(ECHO) $(FAIL_STRING) | $(R_ALIGN); exit 1)
 	@$(ECHO) $(GOOD_STRING) | $(R_ALIGN)
 
 clean:
