@@ -3,8 +3,6 @@
 #include "queue.h"
 #include <semaphore.h>
 
-// TODO
-
 queue* new_queue(bool is_FIFO, int capacity) {
   queue* q = malloc(sizeof(queue));
   q->is_FIFO = is_FIFO;
@@ -19,7 +17,7 @@ queue* new_queue(bool is_FIFO, int capacity) {
 
   if(sem_init(&(q->producer), 0, capacity) == -1
       || sem_init(&(q->consumer), 0, 0) == -1) {
-    // Error handling for producer & consumer semaphore initialization
+    /* Error handling for producer & consumer semaphore initialization */
     perror("queue"); // TODO: maybe synchronize error messages across project
     exit(-1);
   }
@@ -38,6 +36,9 @@ int push_queue(queue* q, int item) {
 
   new_entry->value = item;
 
+  /* Critical section. Wait on producer semaphore, lock buffer,
+     insert, unlock buffer, and post consumer semaphore. */
+  
   if(sem_wait(&(q->producer))) {
     /* Lock production semaphore */
     /* This causes the thread to block until there's space in the queue */
@@ -67,9 +68,8 @@ int push_queue(queue* q, int item) {
       return -1;
     }
     
-    if(sem_post(&(q->producer))
-       || sem_post(&(q->consumer))) {
-      /* Unlock production and consumption semaphores */
+    if(sem_post(&(q->consumer))) {
+      /* Unlock consumption semaphore */
       return q->size;
     } else {
       /* Handle semaphore post failure */
@@ -81,6 +81,14 @@ int push_queue(queue* q, int item) {
     perror("queue push"); // TODO
     return -1;
   }
+}
+
+int pop_queue(queue* q) {
+  // TODO
+}
+
+void free_queue(queue* q) {
+  // TODO
 }
 
 void print_queue(queue* q) {
