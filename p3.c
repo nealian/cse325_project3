@@ -21,10 +21,9 @@
 #include <stdio.h>
 #include "queue.h"
 
-
 // *CONSTANTS*
 #define BUF_CAPACITY 10
-
+#define ERR_MSG "p3"
 
 // *TYPES AND STRUCTS*
 typedef struct {
@@ -32,11 +31,9 @@ typedef struct {
   queue *q;
 } thread_args;
 
-
 // *FUNCTION PROTOTYPES*
 void *producer_thread(void *args);
 void *consumer_thread(void *args);
-
 
 // *MAIN PROGRAM*
 int main(int argc, char *argv[]){
@@ -47,10 +44,21 @@ int main(int argc, char *argv[]){
   int i;
   srand(time(NULL));
 
-
   /* 1. Get command line arguments */
   if (argc != 4) {
-    printf("Usage:\t%s <number of producer threads> <number of consumer threads> <fifo(0) or filo(1)>\n",argv[0]);
+    fprintf(stderr, "Usage:\t%s <number of producer threads> <number of consumer threads> <fifo(0) or filo(1)>\n",argv[0]);
+    exit(1);
+  }
+
+  char *end_p, *end_c, *end_f;
+  num_producers = strtol(argv[1], &end_p, 10);
+  num_consumers = strtol(argv[2], &end_c, 10);
+  is_FIFO = strtol(argv[3], &end_f, 2);
+
+  if(end_p == argv[1] || *end_p != '\0' || num_producers < 1
+     || end_c == argv[2] || *end_c != '\0' || num_consumers < 1
+     || end_f == argv[3] || *end_f != '\0' || !(is_FIFO == 0 || is_FIFO == 1)) {
+    fprintf(stderr, "Error parsing command-line arguments.\n");
     exit(1);
   }
   num_producers = atoi(argv[1]);
@@ -102,7 +110,6 @@ int main(int argc, char *argv[]){
   return 0;
 }
 
-
 /**
  * The thread handler for the producers. Waits a random-ish amount of time, then
  * pushes a random number onto the queue, and finally prints the results.
@@ -145,7 +152,6 @@ void *producer_thread(void *args)
 
   return NULL;
 }
-
 
 /**
  * The thread handler for the consumers. Waits a random-ish amount of time, then
