@@ -7,7 +7,7 @@ queue* new_queue(bool is_FILO, int capacity) {
   q->is_FILO = is_FILO;
   
   TAILQ_INIT(&(q->head));
-    
+
   q->size = 0;
   q->capacity = capacity;
 
@@ -17,10 +17,10 @@ queue* new_queue(bool is_FILO, int capacity) {
   if(sem_init(&(q->producer), 0, capacity) == -1
       || sem_init(&(q->consumer), 0, 0) == -1) {
     /* Error handling for producer & consumer semaphore initialization */
-    perror("queue"); // TODO: maybe synchronize error messages across project
-    exit(-1);
+    perror("queue initialization");
+    exit(1);
   }
-  
+
   return q;
 }
 
@@ -29,14 +29,14 @@ int push_queue(queue* q, int item) {
 
   if(new_entry == NULL) {
     /* Error handling for that malloc */
-    perror("queue push"); // TODO
+    perror("queue element allocation");
     return -1;
   }
 
   new_entry->value = item;
 
   /* Critical section. Lock buffer, insert, unlock buffer. */
-      
+
   if(!pthread_mutex_lock(&(q->buffer_mutex))) {
     /* Lock buffer mutex */
     /* This ensures that buffer modifications don't interfere */
@@ -46,12 +46,12 @@ int push_queue(queue* q, int item) {
 
     if(pthread_mutex_unlock(&(q->buffer_mutex))) {
       /* Handle buffer mutex unlock failure */
-      perror("queue push"); // TODO
-      return -1;
+      perror("queue push");
+      return q->size;
     }
   } else {
     /* Handle buffer mutex lock failure */
-    perror("queue push"); // TODO
+    perror("queue push");
     return -1;
   }
 
@@ -59,8 +59,7 @@ int push_queue(queue* q, int item) {
 }
 
 int pop_queue(queue* q) {
-  /* Critical section. Wait on consumer semaphore, lock buffer,
-     remove item, unlock buffer, and post producer semaphore. */
+  /* Critical section. Lock buffer, remove item, unlock buffer. */
 
   int item = -1;
   if(!pthread_mutex_lock(&(q->buffer_mutex))) {
@@ -84,20 +83,20 @@ int pop_queue(queue* q) {
       free(entry);
     } else {
       /* Should be prevented by the semaphore, but handle error anyway. */
-      perror("queue pop"); // TODO
-      return -1;        
+      perror("queue pop");
+      return -1;
     }
-      
+
     q->size--;
 
     if(pthread_mutex_unlock(&(q->buffer_mutex))) {
       /* Handle buffer mutex unlock failure */
-      perror("queue pop"); // TODO
-      return -1;
+      perror("queue pop");
+      return item;
     }
   } else {
     /* Handle buffer mutex lock failure */
-    perror("queue pop"); // TODO
+    perror("queue pop");
     return -1;
   }
 
@@ -119,22 +118,22 @@ void free_queue(queue* q) {
     if(sem_destroy(&(q->producer))
        || sem_destroy(&(q->consumer))) {
       /* Handle semaphore destruction failure */
-      perror("queue free"); // TODO
+      perror("queue semaphore destruction");
     }
 
     if(pthread_mutex_unlock(&(q->buffer_mutex))) {
       /* Handle buffer mutex unlock failure */
-      perror("queue free"); // TODO
+      perror("queue free");
     }
   } else {
     /* Handle buffer mutex lock failure */
-    perror("queue free"); // TODO    
+    perror("queue free");
   }
 
   /* Destroy mutex */
   if(pthread_mutex_destroy(&(q->buffer_mutex))) {
     /* Handle buffer mutex destruction failure */
-    perror("queue free");
+    perror("queue mutex destruction");
   }
 
   /* Finally, free queue itself */
@@ -146,7 +145,7 @@ void print_queue(queue* q) {
 
   if(!pthread_mutex_lock(&(q->buffer_mutex))) {
     /* Lock buffer mutex */
-    
+
     printf("[");
     TAILQ_FOREACH(entry, &(q->head), entries) {
       printf(" %d", entry->value);
@@ -155,10 +154,10 @@ void print_queue(queue* q) {
 
     if(pthread_mutex_unlock(&(q->buffer_mutex))) {
       /* Handle buffer mutex unlock failure */
-      perror("queue print"); // TODO
+      perror("queue print");
     }
   } else {
     /* Handle buffer mutex lock failure */
-    perror("queue print"); // TODO
+    perror("queue print");
   }
 }
