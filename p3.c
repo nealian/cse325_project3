@@ -54,17 +54,14 @@ int main(int argc, char *argv[]){
   char *end_p, *end_c, *end_f;
   num_producers = strtol(argv[1], &end_p, 10);
   num_consumers = strtol(argv[2], &end_c, 10);
-  is_FIFO = strtol(argv[3], &end_f, 2);
+  is_FILO = strtol(argv[3], &end_f, 2);
 
   if(end_p == argv[1] || *end_p != '\0' || num_producers < 1
      || end_c == argv[2] || *end_c != '\0' || num_consumers < 1
-     || end_f == argv[3] || *end_f != '\0' || !(is_FIFO == 0 || is_FIFO == 1)) {
+     || end_f == argv[3] || *end_f != '\0' || !(is_FILO == 0 || is_FILO == 1)) {
     fprintf(stderr, "Error parsing command-line arguments.\n");
     exit(ERR_CODE);
   }
-  num_producers = atoi(argv[1]);
-  num_consumers = atoi(argv[2]);
-  is_FILO = atoi(argv[3]);
 
   /* 2. Initialize buffer entries with -1*/
   q = new_queue(is_FILO, BUF_CAPACITY);
