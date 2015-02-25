@@ -87,6 +87,16 @@ int main(int argc, char *argv[]){
   /* 5. Sleep 300 seconds*/
   sleep(300);
 
+  /* Cancel remaining blocking threads and clean up thread resources */
+  for(i = 0; i < num_producers; i++) {
+    pthread_cancel(producer_threads[i]);
+    pthread_join(producer_threads[i], NULL);
+  }
+  for(i = 0; i < num_consumers; i++) {
+    pthread_cancel(consumer_threads[i]);
+    pthread_join(consumer_threads[i], NULL);
+  }
+
   /* 6. Exit */
   free_queue(q);
   return 0;
