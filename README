@@ -10,34 +10,35 @@ The program may be compiled with the `make` directive.  Additionally, some basic
 
 
 Examples:
-$ ./p3 9 9 1
-item 1641842837 added by producer 9: buffer = [ 1641842837 ]
-item 637720115 added by producer 3: buffer = [ 1641842837 637720115 ]
-item 870321783 added by producer 5: buffer = [ 1641842837 637720115 870321783 ]
-item 1641842837 removed by consumer 3: buffer = [ 637720115 870321783 ]
-item 318115712 added by producer 6: buffer = [ 637720115 870321783 318115712 ]
-item 637720115 removed by consumer 4: buffer = [ 870321783 318115712 ]
-item 870321783 removed by consumer 9: buffer = [ 318115712 ]
-item 318115712 removed by consumer 7: buffer = [ ]
-item 1888302653 added by producer 8: buffer = [ 1888302653 ]
-item 1888302653 removed by consumer 8: buffer = [ ]
-item 674048658 added by producer 2: buffer = [ 674048658 ]
-item 2027036585 added by producer 1: buffer = [ 674048658 2027036585 ]
-item 674048658 removed by consumer 2: buffer = [ 2027036585 ]
-item 2027036585 removed by consumer 1: buffer = [ ]
-item 1108004868 added by producer 4: buffer = [ 1108004868 ]
-item 950965903 added by producer 7: buffer = [ 1108004868 950965903 ]
-item 1108004868 removed by consumer 5: buffer = [ 950965903 ]
-item 950965903 removed by consumer 6: buffer = [ ]
-$ ./p3 1 2 0
-item 1585306676 added by producer 1: buffer = [ 1585306676 ]
-item 1585306676 removed by consumer 2: buffer = [ ]
-$ ./p3 4 1 1
-item 84723030 added by producer 1: buffer = [ 84723030 ]
-item 84723030 removed by consumer 1: buffer = [ ]
-item 1968217209 added by producer 2: buffer = [ 1968217209 ]
-item 33629377 added by producer 4: buffer = [ 1968217209 33629377 ]
-item 358950373 added by producer 3: buffer = [ 1968217209 33629377 358950373 ]
+  $ ./p3 9 9 1
+  item 1858107848 added by producer 2: buffer = [ 1858107848 ]
+  item 1858107848 removed by consumer 5: buffer = [ ]
+  item 593819124 added by producer 4: buffer = [ 593819124 ]
+  item 593819124 removed by consumer 7: buffer = [ ]
+  item 218603148 added by producer 1: buffer = [ 218603148 ]
+  item 218603148 removed by consumer 8: buffer = [ ]
+  item 1425938399 added by producer 7: buffer = [ 1425938399 ]
+  item 1200801987 added by producer 5: buffer = [ 1425938399 1200801987 ]
+  item 1020928305 added by producer 9: buffer = [ 1425938399 1200801987 1020928305 ]
+  item 271728317 added by producer 3: buffer = [ 1425938399 1200801987 1020928305 271728317 ]
+  item 271728317 removed by consumer 9: buffer = [ 1425938399 1200801987 1020928305 ]
+  item 1020928305 removed by consumer 4: buffer = [ 1425938399 1200801987 ]
+  item 1693828948 added by producer 8: buffer = [ 1425938399 1200801987 1693828948 ]
+  item 1373493830 added by producer 6: buffer = [ 1425938399 1200801987 1693828948 1373493830 ]
+  item 1373493830 removed by consumer 2: buffer = [ 1425938399 1200801987 1693828948 ]
+  item 1693828948 removed by consumer 3: buffer = [ 1425938399 1200801987 ]
+  item 1200801987 removed by consumer 1: buffer = [ 1425938399 ]
+  item 1425938399 removed by consumer 6: buffer = [ ]
 
+  $ ./p3 1 2 0
+  item 1585306676 added by producer 1: buffer = [ 1585306676 ]
+  item 1585306676 removed by consumer 2: buffer = [ ]
+
+  $ ./p3 4 1 1
+  item 1050311717 added by producer 2: buffer = [ 1050311717 ]
+  item 1050311717 removed by consumer 1: buffer = [ ]
+  item 500374754 added by producer 1: buffer = [ 500374754 ]
+  item 1423504565 added by producer 3: buffer = [ 500374754 1423504565 ]
+  item 1463404585 added by producer 4: buffer = [ 500374754 1423504565 1463404585 ]
 
 (Easter eggs! For extra fun, try running the program with big numbers; semaphores (and a mutex internal to the queue) keep the buffer from overfilling, since sem_wait is blocking and so is mutex_lock.)
