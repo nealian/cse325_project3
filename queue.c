@@ -36,103 +36,71 @@ int push_queue(queue* q, int item) {
 
   new_entry->value = item;
 
-  /* Critical section. Wait on producer semaphore, lock buffer,
-     insert, unlock buffer, and post consumer semaphore. */
-  
-  if(!sem_wait(&(q->producer))) {
-    /* Lock production semaphore */
-    /* This causes the thread to block until there's space in the queue */
-    
-    if(!pthread_mutex_lock(&(q->buffer_mutex))) {
-      /* Lock buffer mutex */
-      /* This ensures that buffer modifications don't interfere */
+  /* Critical section. Lock buffer, insert, unlock buffer. */
       
-      if(q->is_FIFO) {
-        /* Insert at head */
-        TAILQ_INSERT_HEAD(&(q->head), new_entry, entries);
-      } else {
-        /* Insert at tail */
-        TAILQ_INSERT_TAIL(&(q->head), new_entry, entries);
-      }
+  if(!pthread_mutex_lock(&(q->buffer_mutex))) {
+    /* Lock buffer mutex */
+    /* This ensures that buffer modifications don't interfere */
       
-      q->size++;
-
-      if(pthread_mutex_unlock(&(q->buffer_mutex))) {
-        /* Handle buffer mutex unlock failure */
-        perror("queue push"); // TODO
-        return -1;
-      }
+    if(q->is_FIFO) {
+      /* Insert at head */
+      TAILQ_INSERT_HEAD(&(q->head), new_entry, entries);
     } else {
-      /* Handle buffer mutex lock failure */
-      perror("queue push"); // TODO
-      return -1;
+      /* Insert at tail */
+      TAILQ_INSERT_TAIL(&(q->head), new_entry, entries);
     }
-    
-    if(!sem_post(&(q->consumer))) {
-      /* Unlock consumption semaphore */
-      return q->size;
-    } else {
-      /* Handle semaphore post failure */
+      
+    q->size++;
+
+    if(pthread_mutex_unlock(&(q->buffer_mutex))) {
+      /* Handle buffer mutex unlock failure */
       perror("queue push"); // TODO
       return -1;
     }
   } else {
-    /* Handle semaphore wait failure */
+    /* Handle buffer mutex lock failure */
     perror("queue push"); // TODO
     return -1;
   }
+
+  return q->size;
 }
 
 int pop_queue(queue* q) {
   /* Critical section. Wait on consumer semaphore, lock buffer,
      remove item, unlock buffer, and post producer semaphore. */
-  if(!sem_wait(&(q->consumer))) {
-    /* Lock consumption semaphore. */
-    /* This causes the thread to block until there is an item in the queue */
 
-    int item = -1;
-    if(!pthread_mutex_lock(&(q->buffer_mutex))) {
-      /* Lock buffer mutex */
-      /* This ensures that buffer modifications don't interfere */
+  int item = -1;
+  if(!pthread_mutex_lock(&(q->buffer_mutex))) {
+    /* Lock buffer mutex */
+    /* This ensures that buffer modifications don't interfere */
 
-      struct q_entry *entry = TAILQ_FIRST(&(q->head));
-      if(entry) {
-        /* Get value of first element in queue, and remove+free */
-        item = entry->value;
-        TAILQ_REMOVE(&(q->head), entry, entries);
-        free(entry);
-      } else {
-        /* Should be prevented by the semaphore, but handle error anyway. */
-        perror("queue pop"); // TODO
-        return -1;        
-      }
-      
-      q->size--;
-
-      if(pthread_mutex_unlock(&(q->buffer_mutex))) {
-        /* Handle buffer mutex unlock failure */
-        perror("queue pop"); // TODO
-        return -1;
-      }
+    struct q_entry *entry = TAILQ_FIRST(&(q->head));
+    if(entry) {
+      /* Get value of first element in queue, and remove+free */
+      item = entry->value;
+      TAILQ_REMOVE(&(q->head), entry, entries);
+      free(entry);
     } else {
-      /* Handle buffer mutex lock failure */
+      /* Should be prevented by the semaphore, but handle error anyway. */
       perror("queue pop"); // TODO
-      return -1;
+      return -1;        
     }
-    
-    if(!sem_post(&(q->producer))) {
-      /* Unlock production semaphore */
-      return item;
-    } else {
-      /* Handle semaphore post failure */
+      
+    q->size--;
+
+    if(pthread_mutex_unlock(&(q->buffer_mutex))) {
+      /* Handle buffer mutex unlock failure */
       perror("queue pop"); // TODO
       return -1;
     }
   } else {
-    /* Handle semaphore wait failure */
+    /* Handle buffer mutex lock failure */
     perror("queue pop"); // TODO
     return -1;
   }
+
+  return item;
 }
 
 void free_queue(queue* q) {
