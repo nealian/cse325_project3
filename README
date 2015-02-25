@@ -48,5 +48,40 @@ EXAMPLES
   item 1423504565 added by producer 3: buffer = [ 500374754 1423504565 ]
   item 1463404585 added by producer 4: buffer = [ 500374754 1423504565 1463404585 ]
 
+IMPLEMENTATION
+  The key component of this project is the set of mechanisms used to synchronize
+  the buffer between the producer and consumer pthreads. Three synchronization
+  structures are used to ensure that no buffer operations interfere: two
+  semaphores, one for producers and one for consumers, and a mutex lock for
+  buffer operations. The buffer mutex lock is handled entirely within the buffer
+  and its helper functions - inserting and removing elements from the buffer
+  locks the mutex, ensuring those operations act atomically with respect to
+  other pthreads. The producer and consumer semaphores work together to prevent
+  race conditions in buffer modification, while simultaneously providing buffer
+  bounds checking as an added bonus. The production semaphore is initialized to
+  the buffer capacity, and the consumer semaphore is initialized to 0. Producers
+  lock the production semaphore on entering a critical section, and unlock the
+  consumer semaphore on leaving. Consumer semaphore behavior is the same, but
+  vice-versa. In this way, the producer and consumer pthreads block until the
+  buffer is in a state where they can perform their operation. One side-effect
+  of this implementation is that pthreads may end up blocking indefinitely; for
+  instance, if the number of consumers is greater than the number of producers,
+  whatever consumer threads are left over at the end will block indefinitely.
+  This is not a bug, but a necessary consequence of the project specification,
+  and is resolved during the thread clean-up process performed by the main
+  thread after sleeping for 300 seconds.
+  With the exception of the synchronization mechanisms, this program is very
+  minimal. pthreads are produced by the main thread, run their predefined
+  routines, and are cleaned up at the end of execution. The buffer structure is
+  implemented as a wrapper of the Linux TAILQ structure, which is defined by
+  <sys/queue.h>. A nice benefit of implementing the buffer in this way rather
+  than as an array is that the buffer size may be adjusted dynamically. Though
+  the buffer size is defined explicitly to be 10 in `p3.c`, it can be redefined
+  to any positive integer without issue.
+
+BUGS
+  None known. The program runs without memory leaks - however, if execution is
+  interrupted during the main thread's 300-second long sleep, some resources
+  will naturally not be freed.
 
 (Easter eggs! For extra fun, try running the program with big numbers; semaphores (and a mutex internal to the queue) keep the buffer from overfilling, since sem_wait is blocking and so is mutex_lock.)
