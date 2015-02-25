@@ -39,11 +39,11 @@ int push_queue(queue* q, int item) {
   /* Critical section. Wait on producer semaphore, lock buffer,
      insert, unlock buffer, and post consumer semaphore. */
   
-  if(sem_wait(&(q->producer))) {
+  if(!sem_wait(&(q->producer))) {
     /* Lock production semaphore */
     /* This causes the thread to block until there's space in the queue */
     
-    if(pthread_mutex_lock(&(q->buffer_mutex))) {
+    if(!pthread_mutex_lock(&(q->buffer_mutex))) {
       /* Lock buffer mutex */
       /* This ensures that buffer modifications don't interfere */
       
@@ -57,7 +57,7 @@ int push_queue(queue* q, int item) {
       
       q->size++;
 
-      if(!pthread_mutex_unlock(&(q->buffer_mutex))) {
+      if(pthread_mutex_unlock(&(q->buffer_mutex))) {
         /* Handle buffer mutex unlock failure */
         perror("queue push"); // TODO
         return -1;
@@ -68,7 +68,7 @@ int push_queue(queue* q, int item) {
       return -1;
     }
     
-    if(sem_post(&(q->consumer))) {
+    if(!sem_post(&(q->consumer))) {
       /* Unlock consumption semaphore */
       return q->size;
     } else {
@@ -86,17 +86,17 @@ int push_queue(queue* q, int item) {
 int pop_queue(queue* q) {
   /* Critical section. Wait on consumer semaphore, lock buffer,
      remove item, unlock buffer, and post producer semaphore. */
-  if(sem_wait(&(q->consumer))) {
+  if(!sem_wait(&(q->consumer))) {
     /* Lock consumption semaphore. */
     /* This causes the thread to block until there is an item in the queue */
 
     int item = -1;
-    if(pthread_mutex_lock(&(q->buffer_mutex))) {
+    if(!pthread_mutex_lock(&(q->buffer_mutex))) {
       /* Lock buffer mutex */
       /* This ensures that buffer modifications don't interfere */
 
       struct q_entry *entry = TAILQ_FIRST(&(q->head));
-      if(entry != NULL) {
+      if(entry) {
         /* Get value of first element in queue, and remove+free */
         item = entry->value;
         TAILQ_REMOVE(&(q->head), entry, entries);
@@ -109,7 +109,7 @@ int pop_queue(queue* q) {
       
       q->size--;
 
-      if(!pthread_mutex_unlock(&(q->buffer_mutex))) {
+      if(pthread_mutex_unlock(&(q->buffer_mutex))) {
         /* Handle buffer mutex unlock failure */
         perror("queue pop"); // TODO
         return -1;
@@ -120,7 +120,7 @@ int pop_queue(queue* q) {
       return -1;
     }
     
-    if(sem_post(&(q->producer))) {
+    if(!sem_post(&(q->producer))) {
       /* Unlock production semaphore */
       return item;
     } else {
@@ -136,7 +136,7 @@ int pop_queue(queue* q) {
 }
 
 void free_queue(queue* q) {
-  if(pthread_mutex_lock(&(q->buffer_mutex))) {
+  if(!pthread_mutex_lock(&(q->buffer_mutex))) {
     /* Lock buffer mutex (though at this point it should not matter) */
 
     /* Free all items remaining in the queue */
@@ -147,13 +147,13 @@ void free_queue(queue* q) {
     }
 
     /* Destroy semaphores */
-    if(!sem_destroy(&(q->producer))
-       || !sem_destroy(&(q->consumer))) {
+    if(sem_destroy(&(q->producer))
+       || sem_destroy(&(q->consumer))) {
       /* Handle semaphore destruction failure */
       perror("queue free"); // TODO
     }
 
-    if(!pthread_mutex_unlock(&(q->buffer_mutex))) {
+    if(pthread_mutex_unlock(&(q->buffer_mutex))) {
       /* Handle buffer mutex unlock failure */
       perror("queue free"); // TODO
     }
@@ -163,7 +163,7 @@ void free_queue(queue* q) {
   }
 
   /* Destroy mutex */
-  if(!pthread_mutex_destroy(&(q->buffer_mutex))) {
+  if(pthread_mutex_destroy(&(q->buffer_mutex))) {
     /* Handle buffer mutex destruction failure */
     perror("queue free");
   }
@@ -175,7 +175,7 @@ void free_queue(queue* q) {
 void print_queue(queue* q) {
   struct q_entry *entry;
 
-  if(pthread_mutex_lock(&(q->buffer_mutex))) {
+  if(!pthread_mutex_lock(&(q->buffer_mutex))) {
     /* Lock buffer mutex */
     
     printf("[");
@@ -184,7 +184,7 @@ void print_queue(queue* q) {
     }
     printf(" ]");
 
-    if(!pthread_mutex_unlock(&(q->buffer_mutex))) {
+    if(pthread_mutex_unlock(&(q->buffer_mutex))) {
       /* Handle buffer mutex unlock failure */
       perror("queue print"); // TODO
     }
