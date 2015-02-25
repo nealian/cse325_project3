@@ -69,11 +69,11 @@ int pop_queue(queue* q) {
     struct q_entry *entry = NULL;
 
     if(q->is_FILO) {
-      /* Pop from head */
-      entry = TAILQ_FIRST(&(q->head));
-    } else {
       /* Pop from tail */
       entry = TAILQ_LAST(&(q->head), q_head);
+    } else {
+      /* Pop from head */
+      entry = TAILQ_FIRST(&(q->head));
     }
 
     if(entry) {
