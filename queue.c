@@ -86,9 +86,21 @@ int push_queue(queue* q, int item) {
 void print_queue(queue* q) {
   struct q_entry *entry;
 
-  printf("[");
-  TAILQ_FOREACH(entry, &(q->head), entries) {
-    printf(" %d", entry->value);
+  if(pthread_mutex_lock(&(q->buffer_mutex))) {
+    /* Lock buffer mutex */
+    
+    printf("[");
+    TAILQ_FOREACH(entry, &(q->head), entries) {
+      printf(" %d", entry->value);
+    }
+    printf(" ]");
+
+    if(!pthread_mutex_unlock(&(q->buffer_mutex))) {
+      /* Handle buffer mutex unlock failure */
+      perror("queue print"); // TODO
+    }
+  } else {
+    /* Handle buffer mutex lock failure */
+    perror("queue print"); // TODO
   }
-  printf(" ]");
 }
