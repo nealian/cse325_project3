@@ -2,7 +2,8 @@
  *
  * filename: p3.c
  *
- * description:
+ * description: A simulation of the synchronization problem of several
+ *              producers and consumers sharing a single fixed-size buffer.
  *
  * group: SANIC TEEM
  * authors: Ian Neal, Rob Kelly
