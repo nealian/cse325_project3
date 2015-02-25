@@ -20,4 +20,6 @@ int main(int argc, char *argv[]){
   /* 4. Create consumer thread(s) */
   /* 5. Sleep 300 seconds*/
   /* 6. Exit */
+
+  return 0;
 }
