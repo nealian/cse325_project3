@@ -6,10 +6,17 @@ Lab Project 3
 The SANIC TEEM Producer / Consumer Experiment For Great Good, hereafter called "the program", is a multithreaded program designed solely to explore multithreaded programming and all the inherent synchronization problems that arise.  The program uses a shared buffer created by the main thread, and then spawns new producer and consumer threads that add to and remove from that buffer, respectively.  It takes three arguments: the number of producers, the number of consumers, and whether to use a First In Last Out style queue (usually called a stack) for the buffer (the alternative is First In First Out, or a standard queue).  The main thread will wait a full five minutes to exit, as per the specifications.  Of note is that, since one can specify more producers than consumers, not every generated element is consumed, and since one can specify more consumers than producers, a few producers might be hanging waiting for elements that will never be generated. These threads are cancelled and cleaned up after the 5-minute sleep.
 
 
-The program may be compiled with the `make` directive.  Additionally, some basic tests may be run with the `make test` directive.
+BUILDING
+  `make` to build the project normally, producing the executable binary `p3`.
+  `make clean` to clean up build files.
+  `make test` to run a set of deployment tests, checking for memory leaks.
 
+USAGE
+  `p3 [PRODUCERS] [CONSUMERS] [IS_FIFO]`
+  Where PRODUCERS is the number of producer threads to spawn, CONSUMERS is the
+  number of consumer threads and IS_FIFO is 0 to use a FIFO buffer, 1 for FILO.
 
-Examples:
+EXAMPLES
   $ ./p3 9 9 1
   item 1858107848 added by producer 2: buffer = [ 1858107848 ]
   item 1858107848 removed by consumer 5: buffer = [ ]
@@ -40,5 +47,6 @@ Examples:
   item 500374754 added by producer 1: buffer = [ 500374754 ]
   item 1423504565 added by producer 3: buffer = [ 500374754 1423504565 ]
   item 1463404585 added by producer 4: buffer = [ 500374754 1423504565 1463404585 ]
+
 
 (Easter eggs! For extra fun, try running the program with big numbers; semaphores (and a mutex internal to the queue) keep the buffer from overfilling, since sem_wait is blocking and so is mutex_lock.)
