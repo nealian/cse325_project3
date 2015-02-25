@@ -41,14 +41,7 @@ int push_queue(queue* q, int item) {
     /* Lock buffer mutex */
     /* This ensures that buffer modifications don't interfere */
       
-    if(q->is_FILO) {
-      /* Insert at head */
-      TAILQ_INSERT_HEAD(&(q->head), new_entry, entries);
-    } else {
-      /* Insert at tail */
-      TAILQ_INSERT_TAIL(&(q->head), new_entry, entries);
-    }
-      
+    TAILQ_INSERT_TAIL(&(q->head), new_entry, entries);
     q->size++;
 
     if(pthread_mutex_unlock(&(q->buffer_mutex))) {
@@ -74,7 +67,16 @@ int pop_queue(queue* q) {
     /* Lock buffer mutex */
     /* This ensures that buffer modifications don't interfere */
 
-    struct q_entry *entry = TAILQ_FIRST(&(q->head));
+    struct q_entry *entry = NULL;
+
+    if(q->is_FILO) {
+      /* Pop from head */
+      entry = TAILQ_FIRST(&(q->head));
+    } else {
+      /* Pop from tail */
+      entry = TAILQ_LAST(&(q->head), q_head);
+    }
+
     if(entry) {
       /* Get value of first element in queue, and remove+free */
       item = entry->value;
