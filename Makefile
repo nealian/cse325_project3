@@ -8,7 +8,7 @@
 #
 ############################################################
 CC = gcc
-CFLAGS = -ggdb -Wall
+CFLAGS = -ggdb -Wall -pthread
 VAL = valgrind --quiet --leak-check=yes --undef-value-errors=no --error-exitcode=1
 OUT = p3
 OBJECTS = queue.o
