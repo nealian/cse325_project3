@@ -26,3 +26,13 @@ queue* new_queue(bool is_FIFO, int capacity) {
   
   return q;
 }
+
+void print_queue(queue* q) {
+  struct q_entry *entry;
+
+  printf("[");
+  TAILQ_FOREACH(entry, &(q->head), entries) {
+    printf(" %d", entry->value);
+  }
+  printf(" ]");
+}
