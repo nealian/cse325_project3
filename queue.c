@@ -1,3 +1,8 @@
+/**
+ * queue.c
+ * Implementation of the synchronized queue wrapper.
+ */
+
 #include <stdlib.h> // malloc
 #include <stdio.h> // printf
 #include "queue.h"
