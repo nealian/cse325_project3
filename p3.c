@@ -109,12 +109,29 @@ void *producer_thread(void *args)
 
   int elem = rand();
   usleep(1000 * (rand() % 1000));
-  if(push_queue(q, elem) < 0) {
-    // Uh, Mr. The Plague, uh, something weird is happening on the net
+
+  if(!sem_wait(&(q->producer))) {
+    /* Lock production semaphore */
+    /* This causes the thread to block until there's space in the buffer */
+
+    if(push_queue(q, elem) < 0) {
+      // Uh, Mr. The Plague, uh, something weird is happening on the net
+    }
+
+    /* Print description of what's up */
+    printf("item %i added by producer %i: buffer = ", elem, producer_number);
+    print_queue(q);
+    putchar('\n');
+
+    /* Unlock consumption semaphore to signal that the buffer has elements */
+    if(sem_post(&(q->consumer))) {
+      /* Handle semaphore post failure */
+      perror("producer semaphore"); // TODO
+    }
+  } else {
+    /* Handle semaphore wait failure */
+    perror("producer semaphore"); // TODO
   }
-  printf("item %i added by producer %i: buffer = ", elem, producer_number);
-  print_queue(q);
-  putchar('\n');
 
   return NULL;
 }
@@ -136,12 +153,29 @@ void *consumer_thread(void *args)
 
   int elem;
   usleep(1000 * (rand() % 1000));
-  if((elem = pop_queue(q)) < 0) {
-    // Uh, Mr. The Plague, uh, something weird is happening on the net
+
+  if(!sem_wait(&(q->consumer))) {
+    /* Lock consumption semaphore. */
+    /* This causes the thread to block until there is an item in the queue */
+
+    if((elem = pop_queue(q)) < 0) {
+      // Uh, Mr. The Plague, uh, something weird is happening on the net
+    }
+
+    /* Check it out y'all, check it check it out */
+    printf("item %i removed by consumer %i: buffer = ", elem, consumer_number);
+    print_queue(q);
+    putchar('\n');
+
+    /* Unlock production semaphore */
+    if(sem_post(&(q->producer))) {
+      /* Handle semaphore post failure */
+      perror("consumer semaphore"); // TODO
+    }
+  } else {
+    /* Handle semaphore wait failure */
+    perror("consumer semaphore"); // TODO
   }
-  printf("item %i removed by consumer %i: buffer = ", elem, consumer_number);
-  print_queue(q);
-  putchar('\n');
 
   return NULL;
 }
