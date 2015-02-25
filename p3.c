@@ -98,7 +98,9 @@ int main(int argc, char *argv[]){
   }
 
   /* 5. Sleep 300 seconds*/
-  sleep(300);
+  if(sleep(300)) {
+    fprintf(stderr, "Main thread sleep interrupted.\n");
+  }
 
   /* Cancel remaining blocking threads and clean up thread resources */
   for(i = 0; i < num_producers; i++) {
@@ -130,7 +132,10 @@ void *producer_thread(void *args)
   args = NULL;
 
   int elem = rand();
-  usleep(1000 * (rand() % 1000));
+
+  if(usleep(1000 * (rand() % 1000))) {
+    fprintf(stderr, "Producer thread sleep interrupted.\n");
+  }
 
   if(!sem_wait(&(q->producer))) {
     /* Lock production semaphore */
@@ -176,7 +181,10 @@ void *consumer_thread(void *args)
   args = NULL;
 
   int elem;
-  usleep(1000 * (rand() % 1000));
+
+  if(usleep(1000 * (rand() % 1000))) {
+    fprintf(stderr, "Consumer thread sleep interrupted.\n");
+  }
 
   if(!sem_wait(&(q->consumer))) {
     /* Lock consumption semaphore. */
